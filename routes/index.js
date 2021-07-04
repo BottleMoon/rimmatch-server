@@ -1,9 +1,10 @@
 const bodyParser = require("body-parser");
 const express = require("express");
 const router = express.Router();
-const db = require("../db/server");
+const db = require("../conf/db/server");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const encrypt = require("./auth");
 
 const randomString = () => {
   return Math.random().toString(36).substr(2, 11);
@@ -14,30 +15,32 @@ router.get("/", (req, res) => {
   res.send("HI");
 });
 
-router.post("/signup", (req, res) => {
+router.post("/signup", async (req, res) => {
   let id = req.body.id;
   let password = req.body.password;
   let age = req.body.age;
   let height = req.body.height;
   let address = req.body.address;
+  let { key, salt } = await encrypt(password); //비밀번호 암호화
+
   User.findOne({ id: id }, (err, user) => {
     if (err) {
       res.send(err);
     } else {
       if (user == null) {
         newUser = new User({
-          id: id,
-          password: password,
-          age: age,
-          height: height,
-          address: address,
+          id,
+          password: key,
+          salt,
+          age,
+          height,
+          address,
         });
-
         newUser.save();
         res.send({ success: true });
       } else {
         res.send({ success: false });
-        console.log("fail");
+        console.log("signup fail");
       }
     }
   });
@@ -46,16 +49,19 @@ router.post("/signup", (req, res) => {
 router.post("/login", (req, res) => {
   let id = req.body.id;
   let password = req.body.password;
-  User.findOne({ id: id }, (err, user) => {
+
+  //user정보의 salt를 이용해 똑같이 암호화 해서 암호화된 password와 비교
+  User.findOne({ id: id }, async (err, user) => {
+    let { key } = await encrypt(password, user.salt);
     if (err) {
       res.send(err);
     } else {
-      if (user != null && user.password == password) {
+      if (user != null && user.password == key) {
         const token = jwt.sign({ id: id }, key);
         console.log(token);
         res.send(token);
       } else {
-        res.send("fail");
+        res.send("login fail");
       }
     }
   });
@@ -63,6 +69,6 @@ router.post("/login", (req, res) => {
 
 router.post("/check_login", (req, res) => {
   const token = req.body.jwt;
-  var decoded_data = jwt.verify(token, key);
 });
+
 module.exports = router;
