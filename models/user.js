@@ -7,7 +7,7 @@ userSchema = new mongoose.Schema({
   height: Number,
   address: String,
   mymatch: [],
-  mypart: [],
+  myparty: [],
 });
 
 module.exports = mongoose.model("User", userSchema);
