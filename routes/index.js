@@ -52,16 +52,20 @@ router.post("/login", (req, res) => {
 
   //user정보의 salt를 이용해 똑같이 암호화 해서 암호화된 password와 비교
   User.findOne({ id: id }, async (err, user) => {
-    let { key } = await encrypt(password, user.salt);
     if (err) {
       res.send(err);
     } else {
-      if (user != null && user.password == key) {
-        const token = jwt.sign({ id: id }, key);
-        console.log(token);
-        res.send(token);
+      if (user !== null) {
+        let { key } = await encrypt(password, user.salt);
+        if (user.password === key) {
+          const token = jwt.sign({ id: id }, key);
+          console.log(token);
+          res.send(token);
+        } else {
+          res.send("fail");
+        }
       } else {
-        res.send("login fail");
+        res.send("fail");
       }
     }
   });
