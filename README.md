@@ -28,4 +28,3 @@
 <img width="40%" src='./gif/Screen Recording 2021-07-06 at 2.24.39 PM.gif'>
 
 - 매칭 신청 시 내 매칭 목록에 저장
-

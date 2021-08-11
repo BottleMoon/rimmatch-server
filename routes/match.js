@@ -33,7 +33,7 @@ router.get("/list/:place/:matchdate/:userid", (req, res) => {
   matchdate_next.setDate(matchdate_next.getDate() + 1);
   if (req_userid !== "all") {
     console.log(req_userid);
-    Match.find({ joinusers: req_userid })
+    Match.find({ joinusers: req_userid }) //TODO user의 mymatch 에서 찾는걸로 바꾸기
       .sort({ createdate: "desc" })
       .exec((err, docs) => {
         console.log(docs);
@@ -84,7 +84,7 @@ router.post("/create", (req, res) => {
   let createdate = req.body.createdate;
   let matchdate = req.body.matchdate;
 
-  newMatch = new Match({
+  const newMatch = new Match({
     title: title,
     joinusers: [admin],
     place: place,
@@ -93,7 +93,7 @@ router.post("/create", (req, res) => {
   });
 
   newMatch.save(function (err, match) {
-    console.log(match._id);
+    console.log("created match : " + match.title);
     console.log(admin);
     User.updateOne(
       //update admin's mymatch
